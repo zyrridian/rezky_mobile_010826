@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK and Web
 
 on:
   push:
@@ -8,9 +8,12 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    name: Build Android APK
+    name: Build Android APK and Web
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,27 +28,28 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.27.4"
+          flutter-version: "3.29.0"
           channel: "stable"
           cache: true
 
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Create env file
-        run: |
-          mkdir -p env
-          echo '{"BASE_URL": "https://marketplace.zyrridian.dev"}' > env/prod.json
-
-      - name: Create local.properties
-        run: |
-          echo "MAPS_API_KEY=${{ secrets.MAPS_API_KEY }}" > android/local.properties
-
       - name: Build Android APK
-        run: flutter build apk --release --dart-define-from-file=env/prod.json
+        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Build Web
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Deploy Web to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
