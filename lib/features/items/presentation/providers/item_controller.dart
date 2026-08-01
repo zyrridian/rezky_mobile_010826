@@ -23,6 +23,8 @@ final itemRepositoryProvider = Provider((ref) {
 
 final getItemsUseCaseProvider = Provider((ref) => GetItemsUseCase(ref.watch(itemRepositoryProvider)));
 final addItemUseCaseProvider = Provider((ref) => AddItemUseCase(ref.watch(itemRepositoryProvider)));
+final updateItemUseCaseProvider = Provider((ref) => UpdateItemUseCase(ref.watch(itemRepositoryProvider)));
+final deleteItemUseCaseProvider = Provider((ref) => DeleteItemUseCase(ref.watch(itemRepositoryProvider)));
 
 abstract class ItemState {}
 class ItemInitial extends ItemState {}
@@ -59,6 +61,29 @@ class ItemController extends Notifier<ItemState> {
       await fetchItems();
     } catch (e) {
       state = ItemError(e.toString());
+    }
+  }
+
+  Future<void> updateItem(int id, String name, String category, String unit) async {
+    state = ItemLoading();
+    try {
+      await ref.read(updateItemUseCaseProvider).execute(id, name, category, unit);
+      await fetchItems();
+    } catch (e) {
+      state = ItemError(e.toString());
+    }
+  }
+
+  Future<void> deleteItem(int id) async {
+    state = ItemLoading();
+    try {
+      await ref.read(deleteItemUseCaseProvider).execute(id);
+      await fetchItems();
+    } catch (e) {
+      state = ItemError(e.toString());
+      // Re-fetch to clear error state eventually or handle it in UI
+      await Future.delayed(const Duration(seconds: 2));
+      await fetchItems();
     }
   }
 }

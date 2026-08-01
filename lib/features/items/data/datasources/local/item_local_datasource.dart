@@ -53,4 +53,34 @@ class ItemLocalDataSource {
       currentStock: 0,
     );
   }
+
+  Future<void> updateItem(int id, String name, String category, String unit) async {
+    final db = await appDatabase.database;
+    await db.update(
+      'items',
+      {
+        'name': name,
+        'category': category,
+        'unit': unit,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> deleteItem(int id) async {
+    final db = await appDatabase.database;
+    
+    final inCountRes = await db.rawQuery('SELECT COUNT(*) as count FROM stock_ins WHERE item_id = ?', [id]);
+    final outCountRes = await db.rawQuery('SELECT COUNT(*) as count FROM stock_outs WHERE item_id = ?', [id]);
+    
+    final inCount = inCountRes.isNotEmpty ? (inCountRes.first['count'] as int?) ?? 0 : 0;
+    final outCount = outCountRes.isNotEmpty ? (outCountRes.first['count'] as int?) ?? 0 : 0;
+    
+    if (inCount > 0 || outCount > 0) {
+      throw Exception('Tidak bisa menghapus barang yang sudah memiliki riwayat transaksi.');
+    }
+    
+    await db.delete('items', where: 'id = ?', whereArgs: [id]);
+  }
 }

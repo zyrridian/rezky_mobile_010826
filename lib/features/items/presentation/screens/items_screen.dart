@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/item_controller.dart';
 import '../../../auth/presentation/providers/login_controller.dart';
 import '../../../auth/presentation/providers/login_state.dart';
+import 'edit_item_screen.dart';
 
 class ItemsScreen extends ConsumerStatefulWidget {
   const ItemsScreen({super.key});
@@ -30,7 +31,7 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Master Barang')),
-      body: _buildBody(itemState),
+      body: _buildBody(itemState, isAdmin),
       floatingActionButton: isAdmin
           ? FloatingActionButton(
               onPressed: () {
@@ -42,7 +43,7 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
     );
   }
 
-  Widget _buildBody(ItemState state) {
+  Widget _buildBody(ItemState state, bool isAdmin) {
     return Column(
       children: [
         Padding(
@@ -58,12 +59,12 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
             },
           ),
         ),
-        Expanded(child: _buildList(state)),
+        Expanded(child: _buildList(state, isAdmin)),
       ],
     );
   }
 
-  Widget _buildList(ItemState state) {
+  Widget _buildList(ItemState state, bool isAdmin) {
     if (state is ItemLoading || state is ItemInitial) {
       return const Center(child: CircularProgressIndicator());
     } else if (state is ItemError) {
@@ -83,6 +84,12 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
               label: Text('Stok: ${item.currentStock}'),
               backgroundColor: item.currentStock > 0 ? Colors.green.shade100 : Colors.red.shade100,
             ),
+            onTap: isAdmin ? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EditItemScreen(item: item)),
+              );
+            } : null,
           );
         },
       );

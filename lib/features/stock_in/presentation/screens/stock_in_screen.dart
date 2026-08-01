@@ -22,7 +22,23 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
     final state = ref.watch(stockInControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Barang Masuk')),
+      appBar: AppBar(
+        title: const Text('Barang Masuk'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () async {
+              final path = await ref.read(stockInControllerProvider.notifier).exportCsv();
+              if (!mounted) return;
+              if (path == 'WEB_DOWNLOADED') {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Berhasil mendownload CSV.')));
+              } else if (path != null && path != 'WEB_NOT_SUPPORTED') {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Berhasil diekspor ke: $path')));
+              }
+            },
+          ),
+        ],
+      ),
       body: _buildBody(state),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.pushNamed(context, '/add_stock_in'),

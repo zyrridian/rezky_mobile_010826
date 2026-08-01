@@ -6,6 +6,12 @@ import '../../domain/entities/stock_in_entity.dart';
 import '../../domain/usecases/stock_in_usecases.dart';
 import '../../../auth/presentation/providers/login_controller.dart'; 
 import '../../../items/presentation/providers/item_controller.dart'; 
+import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:csv/csv.dart';
+import 'package:universal_html/html.dart' as html;
 
 final stockInLocalDataSourceProvider = Provider((ref) {
   return StockInLocalDataSource(ref.watch(databaseProvider));
@@ -63,6 +69,41 @@ class StockInController extends Notifier<StockInState> {
     } catch (e) {
       state = StockInError(e.toString());
     }
+  }
+
+  Future<String?> exportCsv() async {
+    if (state is StockInLoaded) {
+      final items = (state as StockInLoaded).data;
+      List<List<dynamic>> rows = [
+        ['Tanggal', 'Barang', 'Jumlah', 'Keterangan']
+      ];
+      for (var item in items) {
+        rows.add([item.date.toIso8601String(), item.itemName, item.quantity, item.remarks ?? '']);
+      }
+      String csv = const ListToCsvConverter().convert(rows);
+      
+      if (kIsWeb) {
+        final bytes = utf8.encode(csv);
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.document.createElement('a') as html.AnchorElement
+          ..href = url
+          ..style.display = 'none'
+          ..download = 'stock_in_report.csv';
+        html.document.body!.children.add(anchor);
+        anchor.click();
+        html.document.body!.children.remove(anchor);
+        html.Url.revokeObjectUrl(url);
+        return 'WEB_DOWNLOADED';
+      }
+
+      final dir = await getApplicationDocumentsDirectory();
+      final path = '${dir.path}/stock_in_report.csv';
+      final file = File(path);
+      await file.writeAsString(csv);
+      return path;
+    }
+    return null;
   }
 }
 

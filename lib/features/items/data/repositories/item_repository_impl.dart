@@ -22,4 +22,14 @@ class ItemRepositoryImpl implements ItemRepository {
     await remoteDataSource.syncItem();
     return await localDataSource.insertItem(sku, name, category, unit);
   }
+
+  @override
+  Future<void> updateItem(int id, String name, String category, String unit) async {
+    await localDataSource.updateItem(id, name, category, unit);
+  }
+
+  @override
+  Future<void> deleteItem(int id) async {
+    await localDataSource.deleteItem(id);
+  }
 }

@@ -18,3 +18,21 @@ class AddItemUseCase {
     return repository.addItem(sku, name, category, unit);
   }
 }
+
+class UpdateItemUseCase {
+  final ItemRepository repository;
+  UpdateItemUseCase(this.repository);
+
+  Future<void> execute(int id, String name, String category, String unit) {
+    return repository.updateItem(id, name, category, unit);
+  }
+}
+
+class DeleteItemUseCase {
+  final ItemRepository repository;
+  DeleteItemUseCase(this.repository);
+
+  Future<void> execute(int id) {
+    return repository.deleteItem(id);
+  }
+}
