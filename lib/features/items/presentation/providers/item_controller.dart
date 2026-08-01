@@ -42,10 +42,10 @@ class ItemController extends Notifier<ItemState> {
     return ItemInitial();
   }
 
-  Future<void> fetchItems() async {
+  Future<void> fetchItems({String query = ''}) async {
     state = ItemLoading();
     try {
-      final items = await ref.read(getItemsUseCaseProvider).execute();
+      final items = await ref.read(getItemsUseCaseProvider).execute(query: query);
       state = ItemLoaded(items);
     } catch (e) {
       state = ItemError(e.toString());

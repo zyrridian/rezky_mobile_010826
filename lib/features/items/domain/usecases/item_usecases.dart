@@ -5,8 +5,8 @@ class GetItemsUseCase {
   final ItemRepository repository;
   GetItemsUseCase(this.repository);
 
-  Future<List<ItemEntity>> execute() {
-    return repository.getItems();
+  Future<List<ItemEntity>> execute({String query = ''}) {
+    return repository.getItems(query: query);
   }
 }
 

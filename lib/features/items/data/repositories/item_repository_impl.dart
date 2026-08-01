@@ -13,8 +13,8 @@ class ItemRepositoryImpl implements ItemRepository {
   });
 
   @override
-  Future<List<ItemEntity>> getItems() async {
-    return await localDataSource.getItemsWithStock();
+  Future<List<ItemEntity>> getItems({String query = ''}) async {
+    return await localDataSource.getItemsWithStock(query: query);
   }
 
   @override

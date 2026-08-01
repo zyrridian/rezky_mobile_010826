@@ -11,8 +11,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController(text: "eve.holt@reqres.in"); // default test email for reqres
-  final _passwordController = TextEditingController(text: "cityslicka"); // default test pass for reqres
+  final _emailController = TextEditingController(); 
+  final _passwordController = TextEditingController(); 
 
   @override
   void dispose() {

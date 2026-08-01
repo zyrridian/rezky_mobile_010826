@@ -43,6 +43,27 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
   }
 
   Widget _buildBody(ItemState state) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            decoration: const InputDecoration(
+              labelText: 'Search by SKU or Name',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) {
+              ref.read(itemControllerProvider.notifier).fetchItems(query: value);
+            },
+          ),
+        ),
+        Expanded(child: _buildList(state)),
+      ],
+    );
+  }
+
+  Widget _buildList(ItemState state) {
     if (state is ItemLoading || state is ItemInitial) {
       return const Center(child: CircularProgressIndicator());
     } else if (state is ItemError) {

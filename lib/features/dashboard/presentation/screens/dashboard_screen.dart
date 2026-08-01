@@ -2,13 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/login_controller.dart';
 import '../../../auth/presentation/providers/login_state.dart';
+import '../../../items/presentation/providers/item_controller.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(itemControllerProvider.notifier).fetchItems());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(loginControllerProvider);
+    final itemState = ref.watch(itemControllerProvider);
     
     String role = 'operator';
     String email = '';
@@ -31,20 +44,36 @@ class DashboardScreen extends ConsumerWidget {
           )
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Welcome, $email', style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
             Text('Role: ${role.toUpperCase()}', style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
             const SizedBox(height: 48),
-            _buildMenuButton(context, 'Master Barang', Icons.inventory, '/items'),
-            const SizedBox(height: 16),
+            if (role == 'admin') ...[
+              _buildMenuButton(context, 'Master Barang', Icons.inventory, '/items'),
+              const SizedBox(height: 16),
+            ],
             _buildMenuButton(context, 'Transaksi Barang Masuk', Icons.arrow_downward, '/stock_in'),
             const SizedBox(height: 16),
             _buildMenuButton(context, 'Transaksi Barang Keluar', Icons.arrow_upward, '/stock_out'),
+            const SizedBox(height: 32),
+            if (itemState is ItemLoaded) ...[
+              const Text('Low Stock Alerts ( < 10 )', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+              const SizedBox(height: 8),
+              ...itemState.items.where((item) => item.currentStock < 10).map((item) {
+                return Card(
+                  color: Colors.red.shade50,
+                  child: ListTile(
+                    leading: const Icon(Icons.warning, color: Colors.red),
+                    title: Text(item.name),
+                    trailing: Text('Stok: ${item.currentStock}', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  ),
+                );
+              }),
+            ]
           ],
         ),
       ),

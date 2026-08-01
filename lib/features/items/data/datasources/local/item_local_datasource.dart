@@ -6,9 +6,9 @@ class ItemLocalDataSource {
 
   ItemLocalDataSource(this.appDatabase);
 
-  Future<List<ItemModel>> getItemsWithStock() async {
+  Future<List<ItemModel>> getItemsWithStock({String query = ''}) async {
     final db = await appDatabase.database;
-    final query = '''
+    String sql = '''
       SELECT 
         items.id, items.sku, items.name, items.category, items.unit,
         COALESCE((SELECT SUM(quantity) FROM stock_ins WHERE item_id = items.id), 0) -
@@ -16,7 +16,13 @@ class ItemLocalDataSource {
       FROM items
     ''';
     
-    final rows = await db.rawQuery(query);
+    List<dynamic> args = [];
+    if (query.isNotEmpty) {
+      sql += ' WHERE items.name LIKE ? OR items.sku LIKE ?';
+      args.addAll(['%$query%', '%$query%']);
+    }
+    
+    final rows = await db.rawQuery(sql, args);
     
     return rows.map((row) => ItemModel(
       id: row['id'] as int,
