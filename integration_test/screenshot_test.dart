@@ -35,7 +35,6 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 3));
 
     // Capture Dashboard Screen
-    await binding.convertFlutterSurfaceToImage();
     await tester.pumpAndSettle();
     await binding.takeScreenshot('dashboard_screen');
   });
