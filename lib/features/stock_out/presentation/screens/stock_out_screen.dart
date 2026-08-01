@@ -41,6 +41,7 @@ class _StockOutScreenState extends ConsumerState<StockOutScreen> {
       ),
       body: _buildBody(state),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab_stock_out',
         onPressed: () => Navigator.pushNamed(context, '/add_stock_out'),
         child: const Icon(Icons.add),
       ),

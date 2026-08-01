@@ -41,6 +41,7 @@ class _StockInScreenState extends ConsumerState<StockInScreen> {
       ),
       body: _buildBody(state),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab_stock_in',
         onPressed: () => Navigator.pushNamed(context, '/add_stock_in'),
         child: const Icon(Icons.add),
       ),

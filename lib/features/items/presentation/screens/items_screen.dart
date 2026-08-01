@@ -43,6 +43,7 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
       body: _buildBody(itemState, isAdmin),
       floatingActionButton: isAdmin
           ? FloatingActionButton(
+              heroTag: 'fab_items',
               onPressed: () {
                 Navigator.pushNamed(context, '/add_item');
               },
