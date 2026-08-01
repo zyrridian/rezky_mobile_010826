@@ -31,54 +31,102 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           SnackBar(content: Text(next.message), backgroundColor: Colors.red),
         );
       } else if (next is AuthSuccess) {
-        Navigator.pushReplacementNamed(context, '/dashboard');
+        Navigator.pushReplacementNamed(context, '/main');
       }
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.lock_outline, size: 80, color: Colors.blue),
-            const SizedBox(height: 32),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Illustration
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.4,
+                child: Image.asset(
+                  'assets/images/login_illustration.jpg',
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
+              Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  children: [
+                    const Icon(Icons.dashboard_rounded, size: 48, color: Color(0xFFFFB300)),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'WAREMANAGE',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'WM system that is easy to use and adopt by end-users. For all industries, helps companies increase profitability and streamline warehousing operations.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
+                    ),
+                    const SizedBox(height: 32),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: authState is AuthLoading
+                            ? null
+                            : () {
+                                ref.read(loginControllerProvider.notifier).login(
+                                      _emailController.text.trim(),
+                                      _passwordController.text.trim(),
+                                    );
+                              },
+                        child: authState is AuthLoading
+                            ? const CircularProgressIndicator(color: Colors.black)
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Get Started', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward),
+                                ],
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: authState is AuthLoading
-                    ? null
-                    : () {
-                        ref.read(loginControllerProvider.notifier).login(
-                              _emailController.text.trim(),
-                              _passwordController.text.trim(),
-                            );
-                      },
-                child: authState is AuthLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Login', style: TextStyle(fontSize: 16)),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
