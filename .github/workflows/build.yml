@@ -44,6 +44,21 @@ jobs:
           name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
 
+      - name: Publish to GitHub Releases
+        if: github.ref == 'refs/heads/main'
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/flutter-apk/app-release.apk"
+          tag: "latest"
+          name: "Latest Release"
+          body: "Automated build."
+          allowUpdates: true
+          replacesArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Web DB
+        run: dart run sqflite_common_ffi_web:setup --force
+
       - name: Build Web
         run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
 
