@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter/foundation.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 class AppDatabase {
   static Database? _database;
@@ -11,15 +13,22 @@ class AppDatabase {
   }
 
   Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-
-    // increase version or delete the app if there is any changes
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+      return await openDatabase(
+        filePath, // web just uses the name
+        version: 1,
+        onCreate: _createDB,
+      );
+    } else {
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, filePath);
+      return await openDatabase(
+        path,
+        version: 1,
+        onCreate: _createDB,
+      );
+    }
   }
 
   Future _createDB(Database db, int version) async {
