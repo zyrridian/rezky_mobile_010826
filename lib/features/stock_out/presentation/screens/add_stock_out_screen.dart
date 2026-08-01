@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import '../providers/stock_out_controller.dart';
 import '../../../items/presentation/providers/item_controller.dart';
 import '../../../items/domain/entities/item_entity.dart';
@@ -14,6 +15,7 @@ class AddStockOutScreen extends ConsumerStatefulWidget {
 class _AddStockOutScreenState extends ConsumerState<AddStockOutScreen> {
   final _quantityController = TextEditingController();
   final _destinationController = TextEditingController();
+  final _skuController = TextEditingController();
   ItemEntity? _selectedItem;
 
   @override
@@ -26,6 +28,7 @@ class _AddStockOutScreenState extends ConsumerState<AddStockOutScreen> {
   void dispose() {
     _quantityController.dispose();
     _destinationController.dispose();
+    _skuController.dispose();
     super.dispose();
   }
 
@@ -48,17 +51,55 @@ class _AddStockOutScreenState extends ConsumerState<AddStockOutScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // if (itemState is ItemLoading) const CircularProgressIndicator()
             if (itemState is ItemLoading) const CircularProgressIndicator()
-            else if (itemState is ItemLoaded) 
+            else if (itemState is ItemLoaded) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _skuController,
+                      decoration: const InputDecoration(labelText: 'Scan/Ketik SKU', border: OutlineInputBorder()),
+                      onChanged: (value) {
+                        final item = itemState.items.where((e) => e.sku == value.trim()).firstOrNull;
+                        if (item != null) setState(() => _selectedItem = item);
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.qr_code_scanner, size: 36),
+                    onPressed: () async {
+                      var res = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SimpleBarcodeScannerPage(),
+                        ),
+                      );
+                      if (res is String && res != '-1') {
+                        _skuController.text = res;
+                        final item = itemState.items.where((e) => e.sku == res.trim()).firstOrNull;
+                        if (item != null) setState(() => _selectedItem = item);
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<ItemEntity>(
-                decoration: const InputDecoration(labelText: 'Pilih Barang', border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: 'Atau Pilih Manual', border: OutlineInputBorder()),
                 value: _selectedItem,
                 items: itemState.items.map((e) => DropdownMenuItem(
                   value: e,
                   child: Text('${e.name} (${e.sku}) - Stok: ${e.currentStock}'),
                 )).toList(),
-                onChanged: (val) => setState(() => _selectedItem = val),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedItem = val;
+                    if (val != null) _skuController.text = val.sku;
+                  });
+                },
               ),
+            ],
             const SizedBox(height: 12),
             TextField(
               controller: _quantityController, 

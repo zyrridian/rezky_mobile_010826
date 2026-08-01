@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import '../providers/item_controller.dart';
 
 class AddItemScreen extends ConsumerStatefulWidget {
@@ -42,7 +43,25 @@ class _AddItemScreenState extends ConsumerState<AddItemScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(controller: _skuController, decoration: const InputDecoration(labelText: 'SKU (Unik)')),
+            Row(
+              children: [
+                Expanded(child: TextField(controller: _skuController, decoration: const InputDecoration(labelText: 'SKU (Unik)'))),
+                IconButton(
+                  icon: const Icon(Icons.qr_code_scanner, size: 36),
+                  onPressed: () async {
+                    var res = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SimpleBarcodeScannerPage(),
+                      ),
+                    );
+                    if (res is String && res != '-1') {
+                      _skuController.text = res;
+                    }
+                  },
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Nama Barang')),
             const SizedBox(height: 12),

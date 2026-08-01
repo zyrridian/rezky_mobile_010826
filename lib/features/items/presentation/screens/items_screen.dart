@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import '../providers/item_controller.dart';
 import '../../../auth/presentation/providers/login_controller.dart';
 import '../../../auth/presentation/providers/login_state.dart';
@@ -13,10 +14,18 @@ class ItemsScreen extends ConsumerStatefulWidget {
 }
 
 class _ItemsScreenState extends ConsumerState<ItemsScreen> {
+  final _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() => ref.read(itemControllerProvider.notifier).fetchItems());
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -48,15 +57,37 @@ class _ItemsScreenState extends ConsumerState<ItemsScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            decoration: const InputDecoration(
-              labelText: 'Search by SKU or Name',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(),
-            ),
-            onChanged: (value) {
-              ref.read(itemControllerProvider.notifier).fetchItems(query: value);
-            },
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    labelText: 'Search by SKU or Name',
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    ref.read(itemControllerProvider.notifier).fetchItems(query: value);
+                  },
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.qr_code_scanner, size: 36),
+                onPressed: () async {
+                  var res = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SimpleBarcodeScannerPage(),
+                    ),
+                  );
+                  if (res is String && res != '-1') {
+                    _searchController.text = res;
+                    ref.read(itemControllerProvider.notifier).fetchItems(query: res);
+                  }
+                },
+              ),
+            ],
           ),
         ),
         Expanded(child: _buildList(state, isAdmin)),

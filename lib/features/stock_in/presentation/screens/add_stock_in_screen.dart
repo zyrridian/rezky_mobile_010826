@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import '../providers/stock_in_controller.dart';
 import '../../../items/presentation/providers/item_controller.dart';
 
@@ -13,6 +14,7 @@ class AddStockInScreen extends ConsumerStatefulWidget {
 class _AddStockInScreenState extends ConsumerState<AddStockInScreen> {
   final _quantityController = TextEditingController();
   final _remarksController = TextEditingController();
+  final _skuController = TextEditingController();
   int? _selectedItemId;
 
   @override
@@ -25,6 +27,7 @@ class _AddStockInScreenState extends ConsumerState<AddStockInScreen> {
   void dispose() {
     _quantityController.dispose();
     _remarksController.dispose();
+    _skuController.dispose();
     super.dispose();
   }
 
@@ -47,17 +50,56 @@ class _AddStockInScreenState extends ConsumerState<AddStockInScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // if (itemState is ItemLoading) const CircularProgressIndicator()
             if (itemState is ItemLoading) const CircularProgressIndicator()
-            else if (itemState is ItemLoaded) 
+            else if (itemState is ItemLoaded) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _skuController,
+                      decoration: const InputDecoration(labelText: 'Scan/Ketik SKU', border: OutlineInputBorder()),
+                      onChanged: (value) {
+                        final item = itemState.items.where((e) => e.sku == value.trim()).firstOrNull;
+                        if (item != null) setState(() => _selectedItemId = item.id);
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.qr_code_scanner, size: 36),
+                    onPressed: () async {
+                      var res = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SimpleBarcodeScannerPage(),
+                        ),
+                      );
+                      if (res is String && res != '-1') {
+                        _skuController.text = res;
+                        final item = itemState.items.where((e) => e.sku == res.trim()).firstOrNull;
+                        if (item != null) setState(() => _selectedItemId = item.id);
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Pilih Barang', border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: 'Atau Pilih Manual', border: OutlineInputBorder()),
                 value: _selectedItemId,
                 items: itemState.items.map((e) => DropdownMenuItem(
                   value: e.id,
                   child: Text('${e.name} (${e.sku})'),
                 )).toList(),
-                onChanged: (val) => setState(() => _selectedItemId = val),
+                onChanged: (val) {
+                  setState(() {
+                    _selectedItemId = val;
+                    final sku = itemState.items.firstWhere((e) => e.id == val).sku;
+                    _skuController.text = sku;
+                  });
+                },
               ),
+            ],
             const SizedBox(height: 12),
             TextField(
               controller: _quantityController, 
