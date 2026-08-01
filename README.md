@@ -11,6 +11,13 @@ A cross-platform Flutter application (Android & Web) designed for simple and eff
 - **Barcode Scanning:** Built-in camera barcode scanning (supporting both Android and Web) for instant item lookup and transaction entry.
 - **CSV Reporting:** Generate and download `.csv` transaction reports directly to your local Android device or Web browser.
 
+## Screenshots
+These screenshots are automatically generated, framed, and committed by our CI/CD pipeline!
+
+| Login Screen | Dashboard |
+|---|---|
+| ![Login](docs/screenshots/login_screen.png) | ![Dashboard](docs/screenshots/dashboard_screen.png) |
+
 ## Default Test Credentials
 The app uses reqres.in for mock authentication.
 - **Operator (Standard):**

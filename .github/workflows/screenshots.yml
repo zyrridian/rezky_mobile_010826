@@ -1,0 +1,50 @@
+name: Generate Screenshots
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    name: Capture & Frame Screenshots
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Run Integration Tests & Capture Screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          script: flutter drive --driver=test_driver/integration_test.dart --target=integration_test/screenshot_test.dart
+          
+      - name: Run Framing Script
+        run: dart run tool/frame_screenshots.dart
+        
+      - name: Commit Framed Screenshots
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-generate and frame latest screenshots"
+          file_pattern: docs/screenshots/*.png
